@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 //fetch new access token from spotify api
-exports.handler = async function (event, context) {
+export const handler = async function (event, context) {
   const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;

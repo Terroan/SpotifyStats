@@ -1,7 +1,7 @@
 const axios = require('axios');
 const querystring = require('querystring');
 
-exports.handler = async function (event, context) {
+export const handler = async function (event, context) {
   console.log('Eingehender Event:', event);  // Logge den Event, um zu prüfen, ob die Anfrage ankommt 
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;

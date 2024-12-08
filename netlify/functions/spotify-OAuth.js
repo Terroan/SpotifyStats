@@ -1,6 +1,6 @@
 const querystring = require('querystring');
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
   const SPOTIFY_SCOPES = "user-top-read playlist-modify-public";

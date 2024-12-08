@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 // fetch data from spotify api
-exports.handler = async function (event, context) {
+export const handler = async function (event, context) {
   const accessToken = event.queryStringParameters.access_token;
   const limit = 6;
 
