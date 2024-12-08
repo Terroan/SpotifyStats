@@ -1,0 +1,209 @@
+import React, { useState, useEffect } from "react";
+import { FaSpotify } from "react-icons/fa";
+import { SpotifyData } from "./constants";
+
+const App = () => {
+  const [topTracks, setTopTracks] = useState([]);
+  const [topArtists, setTopArtists] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTimeRange, setSelectedTimeRange] = useState("Long");
+  const [profile, setProfile] = useState(null);
+
+  // Diese Funktion aktualisiert die Daten basierend auf dem ausgewählten Zeitbereich
+  const fetchData = async (timeRange) => {
+    setIsLoading(true);
+    try {
+      if (SpotifyData) {
+        // Sicherstellen, dass die Daten existieren und fallbacken, wenn sie nicht vorhanden sind
+        const tracks = SpotifyData[`topTracks${timeRange}`]?.items || [];
+        const artists = SpotifyData[`topArtists${timeRange}`]?.items || [];
+        const profileData = SpotifyData.profile || null; // Fallback auf null, wenn nicht vorhanden
+        setTopTracks(tracks);
+        setTopArtists(artists);
+        setProfile(profileData); // Setze das Profil
+      } else {
+        console.error("Error fetching from spotify: SpotifyData is null or undefined.");
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching data", error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(selectedTimeRange); // Daten beim ersten Laden und bei Auswahl des Zeitbereichs holen
+  }, [selectedTimeRange]);
+
+  const renderPlaceholder = (type) => (
+    <div className="bg-gray-800 p-4 rounded-lg flex items-center gap-4 hover:scale-105 transition-transform duration-300 ease-in-out">
+      <div className="w-16 h-16 bg-gray-600 rounded-md animate-pulse"></div>
+      <div>
+        <h3 className="font-semibold text-gray-400">No {type} available</h3>
+        <p className="text-sm text-gray-500">No {type} to show.</p>
+      </div>
+    </div>
+  );
+
+  // Spotify Auth URL für die Netlify-Function
+  const spotifyAuthUrl = "/.netlify/functions/spotify-OAuth"; // Netlify-Function URL
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-white">
+      <header className="p-6 bg-green-500 flex items-center justify-center shadow-lg">
+        <h1 className="text-3xl font-bold flex items-center gap-2 text-white">
+          <FaSpotify className="text-white text-4xl" /> Spotify Stats
+        </h1>
+      </header>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center h-96">
+          <div className="text-4xl animate-spin">🎵</div>
+        </div>
+      ) : (
+        <main className="p-6 max-w-4xl mx-auto">
+          {/* Profilbild und Name anzeigen */}
+          {profile ? (
+            <section className="mb-8 flex items-center gap-6">
+              <img
+                src={profile.images?.[0]?.url || "default-profile-image.jpg"} // Fallback-Bild
+                alt="Profile"
+                className="w-20 h-20 rounded-full shadow-md"
+              />
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-300">{profile.display_name || "Unknown User"}</h2>
+                <p className="text-gray-400">Music enjoyer with passion</p>
+              </div>
+            </section>
+          ) : (
+            <div>No profile data available</div>
+          )}
+
+          {/* Recently Played Songs */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-300">Recently played songs</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {SpotifyData?.tracksRecentlyPlayed?.items?.length > 0
+                ? SpotifyData.tracksRecentlyPlayed.items.map((track) => (
+                    <a
+                      key={track.track.id}
+                      href={track.track.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-800 p-4 rounded-lg flex items-center gap-4 hover:scale-105 transition-transform duration-300 ease-in-out shadow-lg"
+                    >
+                      <img
+                        src={track.track.album.images?.[0]?.url || "default-image.jpg"} // Fallback-Bild
+                        alt={track.track.name}
+                        className="w-16 h-16 rounded-md shadow-md"
+                      />
+                      <div>
+                        <h3 className="font-semibold">{track.track.name || "Unknown Track"}</h3>
+                        <p className="text-sm text-gray-400">
+                          {track.track.artists?.map((artist) => artist.name).join(", ") || "Unknown Artist"}
+                        </p>
+                      </div>
+                    </a>
+                  ))
+                : renderPlaceholder("Recently Played Songs")}
+            </div>
+          </section>
+
+          {/* Auswahl des Zeitbereichs unter Recently Played Songs */}
+          <section className="mb-8 flex justify-center gap-4">
+            <button
+              onClick={() => setSelectedTimeRange("Long")}
+              className={`px-4 py-2 rounded-lg ${selectedTimeRange === "Long" ? "bg-green-500 text-white" : "bg-gray-700 text-gray-400"} hover:bg-green-600 transition duration-300`}
+            >
+              Long Term
+            </button>
+            <button
+              onClick={() => setSelectedTimeRange("Medium")}
+              className={`px-4 py-2 rounded-lg ${selectedTimeRange === "Medium" ? "bg-green-500 text-white" : "bg-gray-700 text-gray-400"} hover:bg-green-600 transition duration-300`}
+            >
+              Medium Term
+            </button>
+            <button
+              onClick={() => setSelectedTimeRange("Short")}
+              className={`px-4 py-2 rounded-lg ${selectedTimeRange === "Short" ? "bg-green-500 text-white" : "bg-gray-700 text-gray-400"} hover:bg-green-600 transition duration-300`}
+            >
+              Short Term
+            </button>
+          </section>
+
+          {/* Top Songs Section */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-300">My Top-Songs</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {topTracks?.length > 0
+                ? topTracks.map((track) => (
+                    <a
+                      key={track.id}
+                      href={track.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-800 p-4 rounded-lg flex items-center gap-4 hover:scale-105 transition-transform duration-300 ease-in-out shadow-lg"
+                    >
+                      <img
+                        src={track.album.images?.[0]?.url || "default-image.jpg"} // Fallback-Bild
+                        alt={track.name}
+                        className="w-16 h-16 rounded-md shadow-md"
+                      />
+                      <div>
+                        <h3 className="font-semibold">{track.name || "Unknown Track"}</h3>
+                        <p className="text-sm text-gray-400">
+                          {track.artists?.map((artist) => artist.name).join(", ") || "Unknown Artist"}
+                        </p>
+                      </div>
+                    </a>
+                  ))
+                : renderPlaceholder("Songs")}
+            </div>
+          </section>
+
+          {/* Spotify Login Button */}
+          <section className="mb-8 flex justify-center">
+            <a href={spotifyAuthUrl}>
+              <button className="px-6 py-3 bg-green-500 rounded-full text-white flex items-center gap-2 hover:bg-green-600 transition duration-300">
+                <FaSpotify className="text-white text-2xl" />
+                Create Playlist
+              </button>
+            </a>
+          </section>
+
+          {/* Top Artists Section */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-300">My Top-Artists</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {topArtists?.length > 0
+                ? topArtists.map((artist) => (
+                    <a
+                      key={artist.id}
+                      href={artist.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-gray-800 p-4 rounded-lg flex items-center gap-4 hover:scale-105 transition-transform duration-300 ease-in-out shadow-lg"
+                    >
+                      <img
+                        src={artist.images?.[0]?.url || "default-image.jpg"} // Fallback-Bild
+                        alt={artist.name}
+                        className="w-16 h-16 rounded-full shadow-md"
+                      />
+                      <div>
+                        <h3 className="font-semibold">{artist.name || "Unknown Artist"}</h3>
+                        <p className="text-sm text-gray-400">
+                          Genre: {artist.genres?.slice(0, 2).join(", ") || "Unknown Genre"}
+                        </p>
+                      </div>
+                    </a>
+                  ))
+                : renderPlaceholder("Künstler")}
+            </div>
+          </section>
+        </main>
+      )}
+    </div>
+  );
+};
+
+export default App;
