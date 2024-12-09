@@ -1,5 +1,4 @@
 {
-	"siteId": "49398eec-645a-44a0-b920-9e4a66ec7a93",
 	"geolocation": {
 		"data": {
 			"country": {
@@ -11,5 +10,6 @@
 			"longitude": 16.3801
 		},
 		"timestamp": 1733678062285
-	}
+	},
+	"siteId": "49398eec-645a-44a0-b920-9e4a66ec7a93"
 }

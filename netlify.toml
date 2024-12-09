@@ -1,4 +1,12 @@
 [build]
   publish = "dist"
   command = "npm run build"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/netlify/functions/spotify-callback"
+  to = "/.netlify/functions/spotify-callback"
+  status = 200
+  force = true
+
 

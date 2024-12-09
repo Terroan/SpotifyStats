@@ -3,7 +3,7 @@ const axios = require("axios");
 // fetch data from spotify api
 export const handler = async function (event, context) {
   const accessToken = event.queryStringParameters.access_token;
-  const limit = 6;
+  const limit = 15;
 
   try {
 
@@ -104,7 +104,7 @@ export const handler = async function (event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(spotifyData), // Jetzt kein Zyklus mehr!
+      body: JSON.stringify(spotifyData),
     };
   } catch (error) {
     console.error("Error fetching spotify data:", error);

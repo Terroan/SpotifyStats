@@ -1,110 +1,108 @@
-const axios = require('axios');
 const querystring = require('querystring');
+const axios = require('axios');
 
 export const handler = async function (event, context) {
-  console.log('Eingehender Event:', event);  // Logge den Event, um zu prüfen, ob die Anfrage ankommt 
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
   const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
+  const { code, state } = event.queryStringParameters;
 
-  console.log("1111111111111111111111111111111111111111111111111S");
-  // Extrahiere den Code aus der URL
-  const code = event.queryStringParameters.code;
+  const selectedTracks = JSON.parse(state).selectedTracks;
 
   if (!code) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: 'Fehlender Autorisierungscode!' }),
+      body: JSON.stringify({ message: 'Kein Authentifizierungscode gefunden' }),
     };
   }
 
-  // Hole die Track-URIs von der Anfrage (die vom Frontend übergeben werden)
-  const trackUris = event.body ? JSON.parse(event.body).trackUris : [];
-
-  if (!trackUris || trackUris.length === 0) {
+  if (!selectedTracks || selectedTracks.length < 1) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: 'Keine Tracks übergeben!' }),
+      body: JSON.stringify({ message: 'Keine Songs gefunden' }),
     };
+  } else {
+    console.log('----------', selectedTracks[0],'----------');
   }
 
   try {
-    // Base64-Encoded Authorization-Header für den Token-Austausch
-    const auth = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64');
-    
-    // Tausche den Autorisierungscode gegen ein Access Token aus
+    // Überprüfe die Base64-kodierte Autorisierung (client_id und client_secret zusammen)
+    const authHeader = `Basic ${Buffer.from(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET).toString('base64')}`;
+    console.log('Authorization Header:', authHeader);  // Debugging der Auth-Header
+
+    // 1. get access token
     const tokenResponse = await axios.post(
       'https://accounts.spotify.com/api/token',
       querystring.stringify({
-        code: code,
-        redirect_uri: SPOTIFY_REDIRECT_URI,
-        grant_type: 'authorization_code',
+        code: code, // Der von Spotify zurückgegebene Authentifizierungscode
+        redirect_uri: SPOTIFY_REDIRECT_URI, // Die gleiche Redirect URI wie bei der Authentifizierung
+        grant_type: 'authorization_code', // Der Grant-Typ für den Token-Austausch
       }),
       {
         headers: {
-          'Authorization': `Basic ${auth}`,
+          'Authorization': authHeader,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       }
     );
 
-    const accessToken = tokenResponse.data.access_token;
+    if (tokenResponse.data && tokenResponse.data.access_token) {
+      const accessToken = tokenResponse.data.access_token;
+      const headers = {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      };
 
-    // Hole die Top-Songs des Benutzers
-    const topTracksResponse = await axios.get(
-      'https://api.spotify.com/v1/me/top/tracks',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      // 2. get user profile
+      const profileResponse = await axios.get('https://api.spotify.com/v1/me', {
+        headers: headers,
+      });
+      const userID = profileResponse.data.id;
+
+      // 3. create new playlist
+      const playlistResponse = await axios.post(
+        `https://api.spotify.com/v1/users/${userID}/playlists`,
+        {
+          name: 'Danis tracks', // Playlist-Name
         },
-      }
-    );
+        { headers: headers }
+      );
+      const playlistID = playlistResponse.data.id;
 
-    // Extrahiere die Track-URIs
-    const trackUris = topTracksResponse.data.items.map(track => track.uri);
-
-    // Erstelle die Playlist
-    const playlistResponse = await axios.post(
-      'https://api.spotify.com/v1/me/playlists',
-      {
-        name: 'Meine Benutzerdefinierte Playlist',
-        description: 'Playlist basierend auf den übergebenen Tracks!',
-        public: true,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      // 4. add tracks to playlist
+      const trackResponse = await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlistID}/tracks`,
+        {
+          uris: selectedTracks, // Die Track-URIs werden hier übergeben
         },
+        { headers: headers }
+      );
+
+      if (trackResponse.status === 201) {
+        console.log('Tracks erfolgreich hinzugefügt');
+        return {
+          statusCode: 302,  
+          headers: {
+            Location: `http://localhost:8888/playlist-created?playlistId=${playlistID}`,
+          },
+        };
+      } else {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: 'Fehler beim Hinzufügen der Tracks zur Playlist' }),
+        };
       }
-    );
-
-    const playlistId = playlistResponse.data.id;
-
-    // Füge die übergebenen Tracks zur Playlist hinzu
-    await axios.post(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        uris: trackUris, // Track-URIs, die vom Frontend übergeben wurden
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    // Erfolgreiche Erstellung der Playlist und Weiterleitung
-    return {
-      statusCode: 302,
-      headers: {
-        Location: '/qeS', // Redirect zur Homepage nach erfolgreicher Erstellung
-      },
-    };
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Fehler bei der Token-Anforderung' }),
+      };
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Fehler:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Fehler beim Erstellen der Playlist', error: error.message }),
+      body: JSON.stringify({ message: 'Ein unerwarteter Fehler ist aufgetreten', error: error.message }),
     };
   }
 };

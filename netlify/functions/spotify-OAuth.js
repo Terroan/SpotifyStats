@@ -1,19 +1,28 @@
-const querystring = require('querystring');
+const querystring = require("querystring");
 
 export const handler = async function (event, context) {
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-  const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI; // Diese URI sollte bereits korrekt in deiner .env-Datei oder Umgebungsvariable definiert sein
-  const SPOTIFY_SCOPES = "user-top-read playlist-modify-public";
+  const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
+  const SPOTIFY_SCOPES = "user-read-private,playlist-modify-public";
 
-  // Spotify Auth URL
-  const spotifyAuthUrl = `https://accounts.spotify.com/authorize?${querystring.stringify({
-    client_id: SPOTIFY_CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: SPOTIFY_REDIRECT_URI, // Achte darauf, dass du hier keinen encodeURIComponent verwendest
-    scope: SPOTIFY_SCOPES,
-  })}`;
+  // Query-Parameter auslesen
+  const queryParams = event.queryStringParameters;
+  console.log("Event: " + queryParams.selectedTracks  + " EVENt");
+  const selectedTracks = queryParams.selectedTracks
+    ? JSON.parse(queryParams.selectedTracks)
+    : null;
 
-  // Weiterleitung an die Auth-URL
+  // Spotify Auth-URL erstellen
+  let spotifyAuthUrl = `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&response_type=code&scope=${SPOTIFY_SCOPES}&show_dialog=true&redirect_uri=${SPOTIFY_REDIRECT_URI}`;
+  
+  // Zustand (State) mit Track-URIs hinzufügen
+  if (selectedTracks) {
+    const state = { selectedTracks };
+    spotifyAuthUrl += `&state=${encodeURIComponent(JSON.stringify(state))}`;
+  }
+
+
+  // Weiterleitung an Spotify
   return {
     statusCode: 301,
     headers: {

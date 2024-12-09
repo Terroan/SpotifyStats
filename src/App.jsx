@@ -7,6 +7,7 @@ const App = () => {
   const [topArtists, setTopArtists] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState("Long");
+  const [spotifyAuthUrl, setAuthURL] = useState();
   const [profile, setProfile] = useState(null);
 
   // Diese Funktion aktualisiert die Daten basierend auf dem ausgewählten Zeitbereich
@@ -14,13 +15,18 @@ const App = () => {
     setIsLoading(true);
     try {
       if (SpotifyData) {
-        // Sicherstellen, dass die Daten existieren und fallbacken, wenn sie nicht vorhanden sind
         const tracks = SpotifyData[`topTracks${timeRange}`]?.items || [];
         const artists = SpotifyData[`topArtists${timeRange}`]?.items || [];
-        const profileData = SpotifyData.profile || null; // Fallback auf null, wenn nicht vorhanden
+        const profileData = SpotifyData.profile || null;
+  
         setTopTracks(tracks);
         setTopArtists(artists);
-        setProfile(profileData); // Setze das Profil
+        setProfile(profileData);
+  
+        const trackUris = tracks.map((track) => track.uri);
+        const encodedUris = JSON.stringify(trackUris);
+        setAuthURL(`/.netlify/functions/spotify-OAuth?selectedTracks=${encodedUris}`);
+        console.log(spotifyAuthUrl);
       } else {
         console.error("Error fetching from spotify: SpotifyData is null or undefined.");
       }
@@ -30,6 +36,7 @@ const App = () => {
       setIsLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchData(selectedTimeRange); // Daten beim ersten Laden und bei Auswahl des Zeitbereichs holen
@@ -45,11 +52,8 @@ const App = () => {
     </div>
   );
 
-  // Spotify Auth URL für die Netlify-Function
-  const spotifyAuthUrl = "/.netlify/functions/spotify-OAuth"; // Netlify-Function URL
-
   return (
-    <div className="bg-gray-900 min-h-screen text-white">
+    <div className="bg-gray-900 min-h-screen text-white app-container">
       <header className="p-6 bg-green-500 flex items-center justify-center shadow-lg">
         <h1 className="text-3xl font-bold flex items-center gap-2 text-white">
           <FaSpotify className="text-white text-4xl" /> Spotify Stats
@@ -65,11 +69,17 @@ const App = () => {
           {/* Profilbild und Name anzeigen */}
           {profile ? (
             <section className="mb-8 flex items-center gap-6">
-              <img
-                src={profile.images?.[0]?.url || "default-profile-image.jpg"} // Fallback-Bild
-                alt="Profile"
-                className="w-20 h-20 rounded-full shadow-md"
-              />
+              <a
+                href={profile.external_urls?.spotify || "#"} // Verlinkt auf das Spotify-Profil
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src={profile.images?.[0]?.url || "default-profile-image.jpg"} // Fallback-Bild
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full shadow-md hover:scale-110 transition-transform duration-300"
+                />
+              </a>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-300">{profile.display_name || "Unknown User"}</h2>
                 <p className="text-gray-400">Music enjoyer with passion</p>
@@ -84,7 +94,7 @@ const App = () => {
             <h2 className="text-2xl font-semibold mb-4 text-gray-300">Recently played songs</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {SpotifyData?.tracksRecentlyPlayed?.items?.length > 0
-                ? SpotifyData.tracksRecentlyPlayed.items.map((track) => (
+                ? SpotifyData.tracksRecentlyPlayed.items.slice(0, 6).map((track) => (
                     <a
                       key={track.track.id}
                       href={track.track.external_urls.spotify}
@@ -136,7 +146,7 @@ const App = () => {
             <h2 className="text-2xl font-semibold mb-4 text-gray-300">My Top-Songs</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {topTracks?.length > 0
-                ? topTracks.map((track) => (
+                ? topTracks.slice(0, 6).map((track) => (
                     <a
                       key={track.id}
                       href={track.external_urls.spotify}
@@ -176,7 +186,7 @@ const App = () => {
             <h2 className="text-2xl font-semibold mb-4 text-gray-300">My Top-Artists</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {topArtists?.length > 0
-                ? topArtists.map((artist) => (
+                ? topArtists.slice(0, 10).map((artist) => (
                     <a
                       key={artist.id}
                       href={artist.external_urls.spotify}
