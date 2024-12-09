@@ -4,8 +4,8 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/netlify/functions/spotify-callback"
-  to = "/.netlify/functions/spotify-callback"
+  from = "/netlify/functions/*"
+  to = "/.netlify/functions/:splat"
   status = 200
   force = true
 
