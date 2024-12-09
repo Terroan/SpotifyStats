@@ -7,15 +7,18 @@ html, body, #root {
 
 body {
   display: flex;
-  justify-content: center; /* Zentriert horizontal */
-  align-items: center;    /* Zentriert vertikal */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
+
 .app-container {
-  width: 100%;
-  max-width: none; /* Falls irgendwo max-width gesetzt wurde */
-  margin: 0 auto; /* Zentriert, falls nötig */
+  height: 100%;
+  flex-grow: 1;
 }
+
 
 .logo {
   height: 6em;
