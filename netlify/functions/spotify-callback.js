@@ -5,6 +5,8 @@ export const handler = async function (event, context) {
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
   const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
+  const BASE_URI = process.env.BASE_URI;
+
   const { code, state } = event.queryStringParameters;
 
   const selectedTracks = JSON.parse(state).selectedTracks;
@@ -83,7 +85,7 @@ export const handler = async function (event, context) {
         return {
           statusCode: 302,  
           headers: {
-            Location: `http://localhost:8888/playlist-created?playlistId=${playlistID}`,
+            Location: `${BASE_URI}/playlist-created?playlistId=${playlistID}`,
           },
         };
       } else {
