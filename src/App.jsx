@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import { FaSpotify } from "react-icons/fa";
 import { SpotifyData } from "./constants";
 
+import image1 from './assets/wrapped_21507_2023.jpg';
+import image2 from './assets/wrapped_206816_2024.jpg';
+
+const images = [
+  { src: image1, name: 'image1.jpg' },
+  { src: image2, name: 'image2.jpg' },
+];
+
 const App = () => {
   const [topTracks, setTopTracks] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
@@ -27,7 +35,7 @@ const App = () => {
         const encodedUris = JSON.stringify(trackUris);
         setAuthURL(`/.netlify/functions/spotify-OAuth?selectedTracks=${encodedUris}`);
         console.log(spotifyAuthUrl);
-      } else {
+      } else {  
         console.error("Error fetching from spotify: SpotifyData is null or undefined.");
       }
       setIsLoading(false);
@@ -39,7 +47,7 @@ const App = () => {
   
 
   useEffect(() => {
-    fetchData(selectedTimeRange); // Daten beim ersten Laden und bei Auswahl des Zeitbereichs holen
+    fetchData(selectedTimeRange);// Daten beim ersten Laden und bei Auswahl des Zeitbereichs holen
   }, [selectedTimeRange]);
 
   const renderPlaceholder = (type) => (
@@ -210,6 +218,38 @@ const App = () => {
                 : renderPlaceholder("Künstler")}
             </div>
           </section>
+
+          {/* Wrapped Section */}
+          <section className="mt-16 mb-16"> {/* Hier wird der obere Abstand mit mt-16 hinzugefügt */}
+            <h2 className="text-2xl font-semibold mb-4 text-gray-300">Wrapped</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"> {/* Größerer Abstand zwischen den Elementen */}
+              {images.length > 0 ? (
+                images.map((image) => {
+                  // Extrahiere den Text nach dem letzten Unterstrich (_)
+                  const imageName = image.src.split('_').pop().split('.')[0]; // Nimmt den letzten Teil des Bildpfads
+                  
+                  return (
+                    <div key={image.src} className="bg-gray-800 p-6 rounded-lg flex flex-col items-center gap-4 hover:scale-105 transition-transform duration-300 ease-in-out shadow-lg">
+                      {/* Sehr großes Bild */}
+                      <img
+                        src={image.src}
+                        alt={image.src} // Bildpfad als alt-Text
+                        className="w-56 h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-md shadow-md hover:scale-110 transition-transform duration-300 ease-in-out" // Hover-Animation
+                      />
+                      {/* Text unter dem Bild, jetzt der extrahierte Name */}
+                      <div>
+                        <h3 className="font-semibold text-gray-300 text-lg">{imageName}</h3> {/* Nur der Name nach dem letzten Unterstrich */}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                renderPlaceholder("Images")
+              )}
+            </div>
+          </section>
+
+
         </main>
       )}
     </div>
