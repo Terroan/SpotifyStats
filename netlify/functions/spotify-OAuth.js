@@ -3,7 +3,7 @@ const querystring = require("querystring");
 export const handler = async function (event, context) {
   const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
   const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
-  const SPOTIFY_SCOPES = "user-read-private,playlist-modify-public";
+  const SPOTIFY_SCOPES = "user-read-private, playlist-modify-public";
 
   // Query-Parameter auslesen
   const queryParams = event.queryStringParameters;

@@ -1,15 +1,21 @@
 {
 	"geolocation": {
 		"data": {
+			"city": "Hallein",
 			"country": {
 				"code": "AT",
 				"name": "Austria"
 			},
+			"subdivision": {
+				"code": "5",
+				"name": "Salzburg"
+			},
 			"timezone": "Europe/Vienna",
-			"latitude": 48.2048,
-			"longitude": 16.3801
+			"latitude": 47.6817,
+			"longitude": 13.0974,
+			"postalCode": "5400"
 		},
-		"timestamp": 1733853489821
+		"timestamp": 1734505327450
 	},
 	"siteId": "49398eec-645a-44a0-b920-9e4a66ec7a93"
 }

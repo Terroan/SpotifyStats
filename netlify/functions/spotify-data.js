@@ -90,7 +90,6 @@ export const handler = async function (event, context) {
       },
     });
 
-    // Extrahi nur die relevanten Daten, um zyklische Strukturen zu vermeiden
     const spotifyData = {
       profile: profileRes.data, // Nur das `data`-Objekt verwenden
       tracksRecentlyPlayed: tracksResRecently.data, // Nur das `data`-Objekt verwenden

@@ -181,7 +181,7 @@ const App = () => {
           {/* Spotify Login Button */}
           <section className="mb-8 flex justify-center">
             <a href={spotifyAuthUrl}>
-              <button className="px-6 py-3 bg-green-500 rounded-full text-white flex items-center gap-2 hover:bg-green-600 transition duration-300">
+              <button disabled className="px-6 py-3 bg-green-500 rounded-full text-white flex items-center gap-2 hover:bg-green-600 transition duration-300">
                 <FaSpotify className="text-white text-2xl" />
                 Create Playlist
               </button>
