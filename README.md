@@ -1,8 +1,7 @@
-# React + Vite
+Simple overview for my spotify stats. Created with the JS-framework "React" and published on Netlify.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+#Goal
+The goal of the project was to use the spotify API to get my personal stats like top songs and give the option to sign in and create a playlist on someones account. 
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+#Problem
+Right now the button "Create Playlist" is deactivated because my API is still in Developer Mode and Spotify must accept my request first in order to make extern users possible.
