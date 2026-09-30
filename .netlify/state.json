@@ -1,7 +1,7 @@
 {
 	"geolocation": {
 		"data": {
-			"city": "Hallein",
+			"city": "Zell am See",
 			"country": {
 				"code": "AT",
 				"name": "Austria"
@@ -11,11 +11,11 @@
 				"name": "Salzburg"
 			},
 			"timezone": "Europe/Vienna",
-			"latitude": 47.6817,
-			"longitude": 13.0974,
-			"postalCode": "5400"
+			"latitude": 47.3286,
+			"longitude": 12.798,
+			"postalCode": "5700"
 		},
-		"timestamp": 1734505327450
+		"timestamp": 1790799184817
 	},
 	"siteId": "49398eec-645a-44a0-b920-9e4a66ec7a93"
 }
